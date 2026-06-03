@@ -17,6 +17,17 @@ test('release gate has a working build script', () => {
   assert.equal(result.status, 0, result.stderr || result.stdout);
 });
 
+test('CLI version matches package version', () => {
+  const packageJson = JSON.parse(readFileSync('package.json', 'utf8'));
+  const result = spawnSync('node', ['src/cli.js', '--version'], {
+    cwd: process.cwd(),
+    encoding: 'utf8'
+  });
+
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  assert.equal(result.stdout.trim(), packageJson.version);
+});
+
 test('npm package contains runtime files without the test suite', () => {
   const result = runNpm(['pack', '--dry-run', '--json']);
 
@@ -41,9 +52,12 @@ test('README points to a single local release gate command', () => {
   assert.doesNotMatch(readme, /npm install -g "\.\/\$TARBALL"/);
 });
 
-test('README states the production value contract', () => {
+test('README foregrounds the core launch repair workflow', () => {
   const readme = readFileSync('README.md', 'utf8');
 
+  assert.match(readme, /ranked launch blockers/);
+  assert.match(readme, /agent-ready repair brief/);
+  assert.match(readme, /rerun/);
   assert.match(readme, /understand/);
   assert.match(readme, /try/);
   assert.match(readme, /trust/);
@@ -51,6 +65,8 @@ test('README states the production value contract', () => {
   assert.match(readme, /benefit/);
   assert.match(readme, /Static evidence/);
   assert.match(readme, /AI judgment/);
+  assert.doesNotMatch(readme, /## Security/);
+  assert.doesNotMatch(readme, /## 安全/);
 });
 
 test('package includes trust and production docs', () => {

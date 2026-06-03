@@ -4,15 +4,24 @@ English | [中文](#中文)
 
 ## English
 
-LaunchLoop is a launch-readiness gate for AI-built products.
+LaunchLoop is a launch repair agent for AI-built products.
 
-It turns a software repo into one practical decision: can a real user understand it, try it, trust it, pay for it, and benefit from it? If not, LaunchLoop shows the blocking gaps and writes a focused brief for Codex, Claude Code, Cursor, or another coding agent to fix the next smallest launch blocker.
+It turns a software repo into ranked launch blockers and an agent-ready repair brief. The core question is simple: what is the smallest concrete change that gets this product closer to real users understanding it, trying it, trusting it, paying for it, and benefiting from it?
 
 ## Core Value
 
 AI coding agents can generate product code quickly. They do not automatically know whether the product is launchable.
 
-LaunchLoop closes that gap by checking the product surface, repo setup, deployment signals, trust basics, revenue path, observability, and validation commands. The output is not a generic checklist; it is a release decision, a blocker list, and an agent-ready repair brief.
+LaunchLoop closes that gap by checking the product surface, repo setup, deployment signals, revenue path, observability, and validation commands. The output is not a generic checklist; it is a prioritized repair loop: find the blocker, generate the brief, fix the product, rerun the check.
+
+## Repair Loop
+
+1. Run `launchloop check` to find ranked launch blockers.
+2. Run `launchloop brief --target codex` to turn the top blocker into an agent-ready repair brief.
+3. Give the brief to a coding agent.
+4. Rerun `launchloop check` and `launchloop verify` until the launch blocker is gone.
+
+LaunchLoop is useful when a project already has code, but the builder does not know what prevents a real user from getting value.
 
 ## Production Standard
 
@@ -42,6 +51,7 @@ LaunchLoop separates Static evidence from AI judgment.
 - AI judgment is optional. It can summarize risks and next actions, but it must not invent secrets, pricing promises, legal claims, or vendor choices.
 - Project scanning does not use values from `.env`, `.env.local`, or other real secret files.
 - AI mode may load only the configured provider key, such as `DEEPSEEK_API_KEY`, from process env, `.env`, or `.env.local` when the key is missing from the shell environment.
+- Detailed trust boundaries are documented in [SECURITY.md](SECURITY.md), but the product value is the launch repair loop.
 
 ## Quick Start
 
@@ -131,10 +141,6 @@ Default AI config:
 - AI-generated code safety
 - Build and test scripts
 
-## Security
-
-See [SECURITY.md](SECURITY.md). The short version: keep real secrets in shell environment variables, a local secret manager, or gitignored `.env` files. LaunchLoop documents required env names through examples and does not use secret values as scan evidence.
-
 ## Philosophy
 
 Build fast, but close the loop.
@@ -145,15 +151,24 @@ Shipping is not just merging code. Shipping means a real user can understand, tr
 
 [English](#english) | 中文
 
-LaunchLoop 是一个面向 AI 构建产品的发布就绪闸门。
+LaunchLoop 是一个面向 AI 构建产品的上线修复智能体。
 
-它把一个软件仓库转化成一个实际判断：真实用户是否能理解、试用、信任、付费，并从产品中获得价值？如果还不能，LaunchLoop 会指出阻塞项，并为 Codex、Claude Code、Cursor 或其他编码智能体生成聚焦的最小修复 brief。
+它把一个软件仓库转化成排序后的上线阻塞项和可交给编码智能体执行的修复 brief。核心问题很简单：哪个最小、具体的改动，能让真实用户更接近理解、试用、信任、付费，并从产品中获得价值？
 
 ## 核心价值
 
 AI 编码智能体可以很快生成产品代码，但它不会天然知道这个产品是否真的能上线。
 
-LaunchLoop 补上这个缺口：检查产品界面、仓库配置、部署信号、信任基础、收入路径、可观测性和验证命令。输出不是泛泛的 checklist，而是发布判断、阻塞项列表和可交给编码智能体的修复任务。
+LaunchLoop 补上这个缺口：检查产品界面、仓库配置、部署信号、收入路径、可观测性和验证命令。输出不是泛泛的 checklist，而是一个优先级明确的修复闭环：发现阻塞项，生成 brief，修复产品，rerun 检查。
+
+## 修复闭环
+
+1. 运行 `launchloop check`，找到排序后的上线阻塞项。
+2. 运行 `launchloop brief --target codex`，把最高优先级阻塞项转成编码智能体可执行的修复 brief。
+3. 把 brief 交给编码智能体执行。
+4. 重新运行 `launchloop check` 和 `launchloop verify`，直到上线阻塞项消失。
+
+当项目已经有代码，但开发者不确定什么阻止真实用户获得价值时，LaunchLoop 才真正有用。
 
 ## 生产标准
 
@@ -183,6 +198,7 @@ LaunchLoop 区分 Static evidence 和 AI judgment。
 - AI judgment 是可选的。它可以总结风险和下一步，但不能编造 secret、定价承诺、法律声明或供应商选择。
 - 项目扫描不会使用 `.env`、`.env.local` 或其他真实 secret 文件里的值。
 - AI 模式在 shell 环境变量缺失时，可以只从 `.env` 或 `.env.local` 加载配置的供应商 key，例如 `DEEPSEEK_API_KEY`。
+- 更详细的信任边界记录在 [SECURITY.md](SECURITY.md)，但产品核心价值是上线修复闭环。
 
 ## 快速开始
 
@@ -271,10 +287,6 @@ LaunchLoop 会把确定性的静态扫描和大模型产品判断结合起来。
 - 隐私、条款等法律基础
 - AI 生成代码的安全边界
 - 构建和测试脚本
-
-## 安全
-
-见 [SECURITY.md](SECURITY.md)。简短原则：真实 secret 只放在 shell 环境变量、本机 secret manager 或被 git 忽略的 `.env` 文件里。LaunchLoop 只通过示例记录必要环境变量名称，不把 secret 值作为扫描证据。
 
 ## 理念
 

@@ -11,7 +11,7 @@ import { renderCheckReport, renderVerifyReport } from './reports/markdown.js';
 import { verifyRoutes } from './verify/smoke.js';
 import { writeJson, writeText, readJson, exists } from './lib/fs.js';
 
-const VERSION = '0.1.0';
+const VERSION = '0.1.1';
 
 async function main() {
   const argv = process.argv.slice(2);
