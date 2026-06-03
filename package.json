@@ -1,0 +1,29 @@
+{
+  "name": "launchloop",
+  "version": "0.1.0",
+  "description": "Open-source launch readiness and product-loop agent for solo software builders.",
+  "type": "module",
+  "bin": {
+    "launchloop": "src/cli.js"
+  },
+  "scripts": {
+    "start": "node src/cli.js",
+    "test": "node --test",
+    "check:example": "node src/cli.js check examples/nextjs-saas",
+    "brief:example": "node src/cli.js brief examples/nextjs-saas --target codex"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "keywords": [
+    "indie-hacker",
+    "launch-readiness",
+    "ai-agent",
+    "product-agent",
+    "micro-saas",
+    "codex",
+    "claude-code"
+  ],
+  "author": "",
+  "license": "MIT"
+}
