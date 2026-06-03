@@ -54,3 +54,26 @@ test('ignores LaunchLoop generated artifacts during content scanning', async () 
   assert.equal(scan.content.keywords.legal, false);
   assert.equal(scan.content.keywords.cta, false);
 });
+
+test('allows root .env when it is ignored by .gitignore', async () => {
+  const root = await tempProject({
+    '.gitignore': '.env\n',
+    '.env': 'DEEPSEEK_API_KEY=test-key\n',
+    '.env.example': 'DEEPSEEK_API_KEY=your_key\n'
+  });
+
+  const scan = await scanProject(root);
+
+  assert.deepEqual(scan.env.committedEnvFiles, []);
+});
+
+test('flags root .env when it is not ignored', async () => {
+  const root = await tempProject({
+    '.env': 'DEEPSEEK_API_KEY=test-key\n',
+    '.env.example': 'DEEPSEEK_API_KEY=your_key\n'
+  });
+
+  const scan = await scanProject(root);
+
+  assert.deepEqual(scan.env.committedEnvFiles, ['.env']);
+});

@@ -1,5 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { mkdtemp, writeFile } from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
 import { analyzeReadinessWithAi } from '../src/ai/analyzer.js';
 
 function scan() {
@@ -93,6 +96,48 @@ test('AI response is parsed into launch-readiness metadata', async () => {
     assert.deepEqual(result.nextActions, ['Add a safe env example.']);
     assert.equal(result.briefAddendum, 'Keep the change limited to deployment documentation.');
     assert.equal(result.usage.total_tokens, 42);
+  } finally {
+    if (originalKey === undefined) {
+      delete process.env.DEEPSEEK_API_KEY;
+    } else {
+      process.env.DEEPSEEK_API_KEY = originalKey;
+    }
+  }
+});
+
+test('force mode loads the configured API key from root .env when process env is missing', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'launchloop-ai-env-'));
+  await writeFile(path.join(root, '.env'), 'DEEPSEEK_API_KEY=dotenv-test-key\n', 'utf8');
+
+  const originalKey = process.env.DEEPSEEK_API_KEY;
+  delete process.env.DEEPSEEK_API_KEY;
+
+  try {
+    const fetchImpl = async (_url, options) => {
+      assert.equal(options.headers.Authorization, 'Bearer dotenv-test-key');
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({
+          choices: [
+            {
+              message: {
+                content: JSON.stringify({
+                  summary: 'AI key loaded from local env file.',
+                  risks: [],
+                  nextActions: []
+                })
+              }
+            }
+          ]
+        })
+      };
+    };
+
+    const result = await analyzeReadinessWithAi({ ...scan(), root }, report(), {}, { mode: 'force', fetchImpl });
+
+    assert.equal(result.skipped, false);
+    assert.equal(result.summary, 'AI key loaded from local env file.');
   } finally {
     if (originalKey === undefined) {
       delete process.env.DEEPSEEK_API_KEY;

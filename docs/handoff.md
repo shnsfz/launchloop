@@ -44,7 +44,7 @@ The first release focuses on launch readiness, not full growth automation.
 
 - Do not compete with coding agents. Make coding agents more successful.
 - Prefer launch-readiness outcomes over generic documentation generation.
-- Never read or print secret values.
+- Never print secret values or use them as scan evidence. AI mode may load only the configured provider key for the provider request.
 - Keep v0.1 local-first and zero-runtime-dependency.
 - Call the model only when it adds judgment; static facts should stay static.
 - Every recommendation must become a small, testable agent brief.

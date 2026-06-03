@@ -1,4 +1,5 @@
 import { callDeepSeekChat } from './deepseek.js';
+import { resolveApiKey } from './env.js';
 import { normalizeAiConfig, shouldRunAi } from './options.js';
 
 export async function analyzeReadinessWithAi(scan, report, config = {}, options = {}) {
@@ -13,10 +14,10 @@ export async function analyzeReadinessWithAi(scan, report, config = {}, options 
     return skipped(aiConfig, `unsupported-provider:${aiConfig.provider}`);
   }
 
-  const apiKey = process.env[aiConfig.apiKeyEnv];
+  const apiKey = await resolveApiKey(aiConfig, scan.root);
   if (!apiKey) {
     if (mode === 'force') {
-      throw new Error(`Missing ${aiConfig.apiKeyEnv}. Set it or run with --no-ai.`);
+      throw new Error(`Missing ${aiConfig.apiKeyEnv}. Set it in the environment or local .env, or run with --no-ai.`);
     }
     return skipped(aiConfig, `missing-env:${aiConfig.apiKeyEnv}`);
   }

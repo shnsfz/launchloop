@@ -111,13 +111,13 @@ export const READINESS_RULES = [
   },
   {
     id: 'secret-hygiene',
-    title: 'No local .env files detected in project root',
+    title: 'No unignored .env files detected in project root',
     weight: 8,
     area: 'AI Coding Safety',
     severity: 'blocker',
     evaluate: (scan) => scan.env.committedEnvFiles.length === 0,
-    message: 'A local .env-style file was detected in the project root. LaunchLoop did not read its value, but it is a safety risk for AI coding tasks.',
-    recommendation: 'Keep real secrets outside version control and avoid exposing them to coding agents. Use .env.example for documentation.'
+    message: 'A root .env-style file was detected without an ignore rule. LaunchLoop did not read it during scanning, but it is a safety risk for AI coding tasks.',
+    recommendation: 'Keep real .env files ignored by git and use .env.example for documentation.'
   },
   {
     id: 'test-script',

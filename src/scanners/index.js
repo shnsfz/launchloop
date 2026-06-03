@@ -1,4 +1,5 @@
 import path from 'node:path';
+import { spawnSync } from 'node:child_process';
 import { exists, listFilesRecursive, readJson, readText, toPosix } from '../lib/fs.js';
 
 const SOURCE_EXT = /\.(tsx|ts|jsx|js|mdx|md|json)$/i;
@@ -121,7 +122,9 @@ async function scanEnv(root) {
 
   const committedEnvFiles = [];
   for (const file of envFiles) {
-    if (await exists(path.join(root, file))) committedEnvFiles.push(file);
+    if (await exists(path.join(root, file)) && !(await isIgnoredEnvFile(root, file))) {
+      committedEnvFiles.push(file);
+    }
   }
 
   return {
@@ -129,6 +132,45 @@ async function scanEnv(root) {
     exampleKeys: [...exampleKeys].sort(),
     committedEnvFiles
   };
+}
+
+async function isIgnoredEnvFile(root, file) {
+  const gitResult = spawnSync('git', ['check-ignore', '--quiet', '--', file], {
+    cwd: root,
+    stdio: 'ignore'
+  });
+
+  if (gitResult.status === 0) return true;
+  return isIgnoredByRootGitignore(await readRootGitignore(root), file);
+}
+
+async function readRootGitignore(root) {
+  const filePath = path.join(root, '.gitignore');
+  if (!(await exists(filePath))) return '';
+  return readText(filePath);
+}
+
+function isIgnoredByRootGitignore(raw, file) {
+  let ignored = false;
+
+  for (const line of raw.split(/\r?\n/)) {
+    const pattern = line.trim();
+    if (!pattern || pattern.startsWith('#')) continue;
+
+    const negated = pattern.startsWith('!');
+    const normalized = (negated ? pattern.slice(1) : pattern).replace(/^\//, '');
+    if (gitignorePatternMatches(normalized, file)) {
+      ignored = !negated;
+    }
+  }
+
+  return ignored;
+}
+
+function gitignorePatternMatches(pattern, file) {
+  if (pattern === file) return true;
+  if (pattern.endsWith('*')) return file.startsWith(pattern.slice(0, -1));
+  return false;
 }
 
 function extractEnvKeys(raw) {
