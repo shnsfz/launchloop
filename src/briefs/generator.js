@@ -45,6 +45,31 @@ export function generateAgentBrief(report, scan, config = {}, target = 'generic'
   }
   lines.push('');
 
+  if (report.ai && !report.ai.skipped) {
+    lines.push('## AI Review');
+    lines.push('');
+    lines.push(`Provider: ${report.ai.provider}`);
+    lines.push('');
+    lines.push(`Model: ${report.ai.model}`);
+    lines.push('');
+    if (report.ai.summary) {
+      lines.push(report.ai.summary);
+      lines.push('');
+    }
+    if (report.ai.risks?.length > 0) {
+      lines.push('Risks:');
+      lines.push('');
+      for (const risk of report.ai.risks) lines.push(`- ${risk}`);
+      lines.push('');
+    }
+    if (report.ai.briefAddendum) {
+      lines.push('Agent handoff note:');
+      lines.push('');
+      lines.push(report.ai.briefAddendum);
+      lines.push('');
+    }
+  }
+
   lines.push('## Implementation Scope');
   lines.push('');
   lines.push('Allowed changes:');

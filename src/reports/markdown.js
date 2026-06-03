@@ -16,6 +16,36 @@ export function renderCheckReport(report, scan) {
   lines.push(report.summary);
   lines.push('');
 
+  if (report.ai) {
+    lines.push('## AI Review');
+    lines.push('');
+    if (report.ai.skipped) {
+      lines.push(`AI review skipped: ${report.ai.reason}.`);
+      lines.push('');
+    } else {
+      lines.push(`Provider: ${report.ai.provider}`);
+      lines.push('');
+      lines.push(`Model: ${report.ai.model}`);
+      lines.push('');
+      if (report.ai.summary) {
+        lines.push(report.ai.summary);
+        lines.push('');
+      }
+      if (report.ai.risks?.length > 0) {
+        lines.push('Risks:');
+        lines.push('');
+        for (const risk of report.ai.risks) lines.push(`- ${risk}`);
+        lines.push('');
+      }
+      if (report.ai.nextActions?.length > 0) {
+        lines.push('Recommended next actions:');
+        lines.push('');
+        for (const action of report.ai.nextActions) lines.push(`- ${action}`);
+        lines.push('');
+      }
+    }
+  }
+
   if (report.blockers.length > 0) {
     lines.push('## Blocking Issues');
     lines.push('');

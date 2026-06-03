@@ -2,7 +2,7 @@
 
 ## Product Definition
 
-LaunchLoop is an open-source product agent for solo software builders. It helps developers decide whether an AI-coded app is ready for real users, generates focused coding-agent briefs, verifies launch routes, and records product-loop memory.
+LaunchLoop is an open-source product-loop agent for solo software builders. It combines deterministic launch-readiness checks with model-backed product judgment, generates focused coding-agent briefs, verifies launch routes, and records product-loop memory.
 
 ## v0.1 Scope
 
@@ -12,6 +12,8 @@ The first release focuses on launch readiness, not full growth automation.
 
 - Repo scan
 - Launch readiness score
+- DeepSeek-backed AI review when `DEEPSEEK_API_KEY` is available
+- `--no-ai` static mode for deterministic/offline checks
 - Markdown and JSON reports
 - Agent brief generation for Codex, Claude Code, Cursor, and generic coding agents
 - Basic route verification through HTTP GET checks
@@ -44,4 +46,5 @@ The first release focuses on launch readiness, not full growth automation.
 - Prefer launch-readiness outcomes over generic documentation generation.
 - Never read or print secret values.
 - Keep v0.1 local-first and zero-runtime-dependency.
+- Call the model only when it adds judgment; static facts should stay static.
 - Every recommendation must become a small, testable agent brief.

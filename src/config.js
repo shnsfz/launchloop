@@ -16,6 +16,14 @@ export const DEFAULT_CONFIG = {
     '.env.local'
   ],
   readinessThreshold: 85,
+  ai: {
+    mode: 'auto',
+    provider: 'deepseek',
+    model: 'deepseek-v4-flash',
+    baseUrl: 'https://api.deepseek.com',
+    apiKeyEnv: 'DEEPSEEK_API_KEY',
+    timeoutMs: 30000
+  },
   handoff: {
     defaultTarget: 'generic',
     validationCommands: ['npm test', 'npm run build']
@@ -43,6 +51,10 @@ function mergeConfig(base, override) {
     primaryCtaText: override.primaryCtaText ?? base.primaryCtaText,
     requiredEnvVars: override.requiredEnvVars ?? base.requiredEnvVars,
     protectedPaths: override.protectedPaths ?? base.protectedPaths,
+    ai: {
+      ...base.ai,
+      ...(override.ai || {})
+    },
     handoff: {
       ...base.handoff,
       ...(override.handoff || {})

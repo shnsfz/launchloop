@@ -4,6 +4,8 @@ import process from 'node:process';
 import { initProject, loadConfig, launchloopDir } from './config.js';
 import { scanProject } from './scanners/index.js';
 import { evaluateReadiness } from './checks/engine.js';
+import { analyzeReadinessWithAi } from './ai/analyzer.js';
+import { decideAiMode } from './ai/options.js';
 import { generateAgentBrief } from './briefs/generator.js';
 import { renderCheckReport, renderVerifyReport } from './reports/markdown.js';
 import { verifyRoutes } from './verify/smoke.js';
@@ -49,7 +51,7 @@ async function main() {
         fail(`Unknown command: ${command}`);
     }
   } catch (error) {
-    fail(error.stack || error.message || String(error));
+    fail(error.message || String(error));
   }
 }
 
@@ -87,7 +89,7 @@ async function commandScan(argv) {
 
 async function commandCheck(argv) {
   const { root, flags } = parseRootAndFlags(argv);
-  const { scan, report, markdownPath, jsonPath } = await runCheck(root);
+  const { scan, report, markdownPath, jsonPath } = await runCheck(root, { aiMode: decideAiMode(flags, await loadConfig(root)) });
 
   if (flags.json) {
     console.log(JSON.stringify(report, null, 2));
@@ -104,6 +106,9 @@ async function commandCheck(argv) {
     console.log('\nWarnings:');
     for (const warning of report.warnings.slice(0, 8)) console.log(`- ${warning.title}: ${warning.recommendation}`);
   }
+  if (report.ai && !flags.json) {
+    console.log(`\nAI: ${aiStatus(report.ai)}`);
+  }
   console.log(`\nReport: ${relative(markdownPath)}`);
   console.log(`JSON: ${relative(jsonPath)}`);
   void scan;
@@ -113,7 +118,7 @@ async function commandBrief(argv) {
   const { root, flags } = parseRootAndFlags(argv);
   const target = stringFlag(flags.target) || 'generic';
   const config = await loadConfig(root);
-  const { scan, report } = await runCheck(root);
+  const { scan, report } = await runCheck(root, { aiMode: decideAiMode(flags, config) });
   const brief = generateAgentBrief(report, scan, config, target);
   const defaultPath = path.join(launchloopDir(root), 'handoffs', `${target}-brief.md`);
   const outPath = stringFlag(flags.out) ? path.resolve(root, stringFlag(flags.out)) : defaultPath;
@@ -153,10 +158,13 @@ async function commandReport(argv) {
   console.log(`Report: ${relative(reportPath)}`);
 }
 
-async function runCheck(root) {
+async function runCheck(root, options = {}) {
   const config = await loadConfig(root);
   const scan = await scanProject(root, config);
   const report = evaluateReadiness(scan, config);
+  report.ai = await analyzeReadinessWithAi(scan, report, config, {
+    mode: options.aiMode || config.ai?.mode || 'auto'
+  });
   const markdown = renderCheckReport(report, scan);
   const dir = path.join(launchloopDir(root), 'reports');
   const scanPath = path.join(dir, 'last-scan.json');
@@ -212,7 +220,7 @@ function stringFlag(value) {
 }
 
 function printHelp() {
-  console.log(`LaunchLoop ${VERSION}\n\nUsage:\n  launchloop init [root] [--product "Product Name"] [--force]\n  launchloop scan [root] [--json]\n  launchloop check [root] [--json]\n  launchloop brief [root] [--target codex|claude|cursor|generic] [--out path]\n  launchloop verify [root] [--url http://localhost:3000]\n  launchloop report [root]\n\nExamples:\n  launchloop init . --product "My SaaS"\n  launchloop check .\n  launchloop brief . --target codex\n  launchloop verify . --url http://localhost:3000\n`);
+  console.log(`LaunchLoop ${VERSION}\n\nUsage:\n  launchloop init [root] [--product "Product Name"] [--force]\n  launchloop scan [root] [--json]\n  launchloop check [root] [--json] [--ai|--no-ai]\n  launchloop brief [root] [--target codex|claude|cursor|generic] [--out path] [--ai|--no-ai]\n  launchloop verify [root] [--url http://localhost:3000]\n  launchloop report [root]\n\nExamples:\n  launchloop init . --product "My SaaS"\n  launchloop check . --no-ai\n  DEEPSEEK_API_KEY=... launchloop check . --ai\n  launchloop brief . --target codex\n  launchloop verify . --url http://localhost:3000\n`);
 }
 
 function relative(filePath) {
@@ -222,6 +230,12 @@ function relative(filePath) {
 function fail(message) {
   console.error(`LaunchLoop error: ${message}`);
   process.exit(1);
+}
+
+function aiStatus(ai) {
+  if (!ai) return 'not configured';
+  if (ai.skipped) return `skipped (${ai.reason})`;
+  return `${ai.provider}/${ai.model} review included`;
 }
 
 main();
