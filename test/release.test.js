@@ -11,6 +11,10 @@ function runNpm(args) {
   });
 }
 
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 test('release gate has a working build script', () => {
   const result = runNpm(['run', 'build']);
 
@@ -78,6 +82,26 @@ test('package includes trust and production docs', () => {
 
   assert.ok(paths.includes('SECURITY.md'));
   assert.ok(paths.includes('docs/production-standard.md'));
+});
+
+test('production standard is an executable product contract', () => {
+  const standard = readFileSync('docs/production-standard.md', 'utf8');
+
+  for (const section of [
+    '## 1. Scope',
+    '## 4. Evidence Model',
+    '## 5. Decision Model',
+    '## 6. Outcome Standard for Checked Products',
+    '## 7. v0.1 Readiness Rule Matrix',
+    '## 8. CLI Behavior Standard',
+    '## 9. JSON Report Contract',
+    '## 11. Agent Brief Standard',
+    '## 15. Package and Release Standard',
+    '## 17. Dogfood Standard Before Public Announcement',
+    '## 20. Production-Ready Definition of Done'
+  ]) {
+    assert.match(standard, new RegExp(escapeRegExp(section)));
+  }
 });
 
 test('release gate readiness assertion fails on not-ready reports', () => {

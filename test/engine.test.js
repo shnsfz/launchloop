@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { evaluateReadiness } from '../src/checks/engine.js';
+import { READINESS_RULES } from '../src/checks/rules.js';
 
 function baseScan(overrides = {}) {
   return {
@@ -124,4 +125,30 @@ test('project with launch basics can be ready', () => {
   const report = evaluateReadiness(scan, { productName: 'Ready', readinessThreshold: 85 });
   assert.equal(report.status, 'ready');
   assert.equal(report.score, 100);
+});
+
+test('readiness rule matrix keeps stable ids, severities, and 100 total points', () => {
+  const matrix = READINESS_RULES.map((rule) => ({
+    id: rule.id,
+    severity: rule.severity,
+    weight: rule.weight
+  }));
+
+  assert.equal(READINESS_RULES.reduce((sum, rule) => sum + rule.weight, 0), 100);
+  assert.deepEqual(matrix, [
+    { id: 'product-readme', severity: 'warning', weight: 8 },
+    { id: 'value-proposition', severity: 'warning', weight: 8 },
+    { id: 'pricing-path', severity: 'blocker', weight: 10 },
+    { id: 'auth-path', severity: 'warning', weight: 8 },
+    { id: 'onboarding-path', severity: 'warning', weight: 7 },
+    { id: 'env-example', severity: 'blocker', weight: 10 },
+    { id: 'deployment-config', severity: 'warning', weight: 7 },
+    { id: 'analytics-events', severity: 'warning', weight: 8 },
+    { id: 'error-monitoring', severity: 'warning', weight: 6 },
+    { id: 'support-channel', severity: 'warning', weight: 6 },
+    { id: 'legal-basics', severity: 'warning', weight: 6 },
+    { id: 'secret-hygiene', severity: 'blocker', weight: 8 },
+    { id: 'test-script', severity: 'warning', weight: 4 },
+    { id: 'build-script', severity: 'warning', weight: 4 }
+  ]);
 });
